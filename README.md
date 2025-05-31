@@ -11,8 +11,7 @@ A fast, lightweight floating command launcher for Hyprland written in Rust with 
 - **Mouse support** - Click buttons for command execution
 - **Highly customizable** - JSON configuration for all commands
 - **Wayland native** - Built specifically for Hyprland compositor
-- **Modern UI** - Dark theme with smooth animations
-- \*\*Compact design
+- **Compact design & Modern UI** - Dark theme with smooth animations
 - **In-app help** - Press `?` for comprehensive usage guide
 
 ## Quick Start
