@@ -2,7 +2,7 @@ use gdk::Key;
 use gtk::prelude::*;
 use gtk::{
     glib, Application, ApplicationWindow, Box as GtkBox, Button, CssProvider, EventControllerKey,
-    Grid, Label, Orientation,
+    Grid, Label, Orientation, Stack,
 };
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -159,18 +159,35 @@ impl QuickMenuApp {
                 border: 2px solid rgb(80, 80, 100);
             }
             
-            .title-label {
+            .ascii-title {
                 color: #ffffff;
-                font-size: 16px;
+                font-family: 'Courier New', 'Liberation Mono', monospace;
+                font-size: 11px;
                 font-weight: 700;
                 margin-bottom: 8px;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+                line-height: 1.0;
             }
             
             .help-label {
                 color: rgba(200, 200, 200, 0.8);
                 font-size: 10px;
                 margin-top: 8px;
+                text-align: center;
+            }
+            
+            .help-content {
+                color: rgba(220, 220, 220, 0.95);
+                font-size: 11px;
+                margin: 20px;
+                font-family: monospace;
+            }
+            
+            .help-title {
+                color: #ffffff;
+                font-size: 14px;
+                font-weight: 700;
+                margin-bottom: 15px;
                 text-align: center;
             }
             
@@ -232,32 +249,28 @@ impl QuickMenuApp {
         );
     }
 
-    fn build_ui(&self, app: &Application) {
-        let window = ApplicationWindow::builder()
-            .application(app)
-            .title("hyprmenu")
-            .default_width(420)
-            .default_height(220)
-            .resizable(false)
-            .decorated(false)
-            .build();
-
-        window.add_css_class("csd");
-
-        // Main vertical container
+    fn create_main_view(&self, stack: &Stack, window: &ApplicationWindow) -> GtkBox {
         let main_box = GtkBox::new(Orientation::Vertical, 0);
 
-        // Title label
-        let title_label = Label::new(Some("hyprmenu"));
-        title_label.add_css_class("title-label");
+        // ASCII Art Title
+        let ascii_title = "
+██╗  ██╗██╗   ██╗██████╗ ██████╗ ███╗   ███╗███████╗███╗   ██╗██╗   ██╗
+██║  ██║╚██╗ ██╔╝██╔══██╗██╔══██╗████╗ ████║██╔════╝████╗  ██║██║   ██║
+███████║ ╚████╔╝ ██████╔╝██████╔╝██╔████╔██║█████╗  ██╔██╗ ██║██║   ██║
+██╔══██║  ╚██╔╝  ██╔═══╝ ██╔══██╗██║╚██╔╝██║██╔══╝  ██║╚██╗██║██║   ██║
+██║  ██║   ██║   ██║     ██║  ██║██║ ╚═╝ ██║███████╗██║ ╚████║╚██████╔╝
+╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝";
+
+        let title_label = Label::new(Some(ascii_title));
+        title_label.add_css_class("ascii-title");
         title_label.set_halign(gtk::Align::Center);
-        title_label.set_margin_top(12);
+        title_label.set_margin_top(8);
 
         // Grid container
         let grid = Grid::builder()
             .row_spacing(6)
             .column_spacing(6)
-            .margin_top(15)
+            .margin_top(10)
             .margin_bottom(15)
             .margin_start(20)
             .margin_end(20)
@@ -315,146 +328,213 @@ impl QuickMenuApp {
         main_box.append(&grid);
         main_box.append(&help_label);
 
-        window.set_child(Some(&main_box));
+        main_box
+    }
+
+    fn create_help_view(&self) -> GtkBox {
+        let help_box = GtkBox::new(Orientation::Vertical, 0);
+
+        let help_title = Label::new(Some("HYPRMENU - HELP"));
+        help_title.add_css_class("help-title");
+        help_title.set_margin_top(15);
+
+        let help_text = "
+<b><span color=\"#ffffff\" size=\"12pt\">Keyboard Navigation:</span></b>
+• <span color=\"#ff41aa\" weight=\"bold\">a,s,d,f,h,j,k,l</span> - Execute corresponding command
+• <span color=\"#1aff28\" weight=\"bold\">Escape</span> - Close menu / Return to main view
+• <span color=\"#f1ff5e\" weight=\"bold\">?</span> - Show/hide this help
+
+<b><span color=\"#ffffff\" size=\"12pt\">Mouse Navigation:</span></b>
+• Click any button to execute command
+
+<b><span color=\"#ffffff\" size=\"12pt\">Configuration:</span></b>
+• Config file: <span color=\"#f1ff5e\">~/.config/hyprmenu/commands.json</span>
+• Edit the JSON file to customize commands
+• Restart hyprmenu to reload configuration
+
+<b><span color=\"#ffffff\" size=\"12pt\">Command Layout:</span></b>
+<span font_family=\"monospace\" color=\"#ffffff\">
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ [a] Terminal│ [s] Firefox │ [d] Files   │ [f] VS Code │
+├─────────────┼─────────────┼─────────────┼─────────────┤
+│ [h] Spotify │ [j] Discord │[k]Screenshot│ [l] Lock    │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+</span>
+
+<b><span color=\"#ffffff\" size=\"12pt\">Tips:</span></b>
+• Use keyboard shortcuts for fastest navigation
+• Commands execute immediately and close the menu
+• Customize your workflow by editing the config file
+• Press Escape to quickly close without executing anything
+
+<span color=\"#f1ff5e\" weight=\"bold\">Press Escape to return to main menu</span>";
+
+        let help_content = Label::new(None);
+        help_content.set_markup(help_text);
+        help_content.add_css_class("help-content");
+        help_content.set_justify(gtk::Justification::Left);
+        help_content.set_margin_start(20);
+        help_content.set_margin_end(20);
+        help_content.set_margin_bottom(15);
+
+        help_box.append(&help_title);
+        help_box.append(&help_content);
+
+        help_box
+    }
+
+    fn build_ui(&self, app: &Application) {
+        let window = ApplicationWindow::builder()
+            .application(app)
+            .title("hyprmenu")
+            .default_width(500)
+            .default_height(350)
+            .resizable(false)
+            .decorated(false)
+            .build();
+
+        window.add_css_class("csd");
+
+        // Create stack for switching between main and help views
+        let stack = Stack::new();
+
+        // Create main view
+        let main_view = self.create_main_view(&stack, &window);
+        stack.add_named(&main_view, Some("main"));
+
+        // Create help view
+        let help_view = self.create_help_view();
+        stack.add_named(&help_view, Some("help"));
+
+        // Set initial view
+        stack.set_visible_child_name("main");
+
+        window.set_child(Some(&stack));
 
         // Setup keyboard shortcuts
         let key_controller = EventControllerKey::new();
         let commands_clone = self.commands.clone();
         let window_clone = window.clone();
+        let stack_clone = stack.clone();
 
         key_controller.connect_key_pressed(move |_, key, _, _| {
+            let current_view = stack_clone.visible_child_name();
+
             match key {
                 Key::Escape => {
-                    window_clone.close();
+                    if current_view.as_ref().map(|s| s.as_str()) == Some("help") {
+                        stack_clone.set_visible_child_name("main");
+                    } else {
+                        window_clone.close();
+                    }
                     glib::Propagation::Stop
                 }
                 Key::question => {
-                    // Create help window directly in the closure
-                    let help_window = ApplicationWindow::builder()
-                        .title("hyprmenu - Help")
-                        .default_width(500)
-                        .default_height(350)
-                        .resizable(true)
-                        .transient_for(&window_clone)
-                        .modal(true)
-                        .build();
-
-                    let help_text = "
-<big><b>hyprmenu - Quick Command Launcher</b></big>
-
-<b>Keyboard Navigation:</b>
-• <span color=\"#ff41aa\">a,s,d,f,h,j,k,l</span> - Execute corresponding command
-• <span color=\"#1aff28\">Escape</span> - Close menu
-• <span color=\"#f1ff5e\">?</span> - Show this help
-
-<b>Mouse Navigation:</b>
-• Click any button to execute command
-
-<b>Configuration:</b>
-• Config file: <i>~/.config/hyprmenu/commands.json</i>
-• Edit the JSON file to customize commands
-• Restart hyprmenu to reload configuration
-
-<b>Command Layout:</b>
-<tt>
-[a] Terminal    [s] Firefox     [d] Files       [f] VS Code
-[h] Spotify     [j] Discord     [k] Screenshot  [l] Lock
-</tt>";
-
-                    let help_label = Label::new(None);
-                    help_label.set_markup(help_text);
-                    help_label.set_margin_top(20);
-                    help_label.set_margin_bottom(20);
-                    help_label.set_margin_start(20);
-                    help_label.set_margin_end(20);
-                    help_label.set_justify(gtk::Justification::Left);
-
-                    help_window.set_child(Some(&help_label));
-                    help_window.present();
-
-                    glib::Propagation::Stop
-                }
-                Key::a => {
-                    if let Some(cmd) = commands_clone.get(0) {
-                        let command = cmd.command.clone();
-                        gio::spawn_blocking(move || {
-                            let _result = Command::new("sh").arg("-c").arg(&command).spawn();
-                        });
-                        window_clone.close();
+                    if current_view.as_ref().map(|s| s.as_str()) == Some("main") {
+                        stack_clone.set_visible_child_name("help");
+                    } else {
+                        stack_clone.set_visible_child_name("main");
                     }
                     glib::Propagation::Stop
                 }
-                Key::s => {
-                    if let Some(cmd) = commands_clone.get(1) {
-                        let command = cmd.command.clone();
-                        gio::spawn_blocking(move || {
-                            let _result = Command::new("sh").arg("-c").arg(&command).spawn();
-                        });
-                        window_clone.close();
+                _ => {
+                    // Only handle command keys when on main view
+                    if current_view.as_ref().map(|s| s.as_str()) == Some("main") {
+                        match key {
+                            Key::a => {
+                                if let Some(cmd) = commands_clone.get(0) {
+                                    let command = cmd.command.clone();
+                                    gio::spawn_blocking(move || {
+                                        let _result =
+                                            Command::new("sh").arg("-c").arg(&command).spawn();
+                                    });
+                                    window_clone.close();
+                                }
+                                glib::Propagation::Stop
+                            }
+                            Key::s => {
+                                if let Some(cmd) = commands_clone.get(1) {
+                                    let command = cmd.command.clone();
+                                    gio::spawn_blocking(move || {
+                                        let _result =
+                                            Command::new("sh").arg("-c").arg(&command).spawn();
+                                    });
+                                    window_clone.close();
+                                }
+                                glib::Propagation::Stop
+                            }
+                            Key::d => {
+                                if let Some(cmd) = commands_clone.get(2) {
+                                    let command = cmd.command.clone();
+                                    gio::spawn_blocking(move || {
+                                        let _result =
+                                            Command::new("sh").arg("-c").arg(&command).spawn();
+                                    });
+                                    window_clone.close();
+                                }
+                                glib::Propagation::Stop
+                            }
+                            Key::f => {
+                                if let Some(cmd) = commands_clone.get(3) {
+                                    let command = cmd.command.clone();
+                                    gio::spawn_blocking(move || {
+                                        let _result =
+                                            Command::new("sh").arg("-c").arg(&command).spawn();
+                                    });
+                                    window_clone.close();
+                                }
+                                glib::Propagation::Stop
+                            }
+                            Key::h => {
+                                if let Some(cmd) = commands_clone.get(4) {
+                                    let command = cmd.command.clone();
+                                    gio::spawn_blocking(move || {
+                                        let _result =
+                                            Command::new("sh").arg("-c").arg(&command).spawn();
+                                    });
+                                    window_clone.close();
+                                }
+                                glib::Propagation::Stop
+                            }
+                            Key::j => {
+                                if let Some(cmd) = commands_clone.get(5) {
+                                    let command = cmd.command.clone();
+                                    gio::spawn_blocking(move || {
+                                        let _result =
+                                            Command::new("sh").arg("-c").arg(&command).spawn();
+                                    });
+                                    window_clone.close();
+                                }
+                                glib::Propagation::Stop
+                            }
+                            Key::k => {
+                                if let Some(cmd) = commands_clone.get(6) {
+                                    let command = cmd.command.clone();
+                                    gio::spawn_blocking(move || {
+                                        let _result =
+                                            Command::new("sh").arg("-c").arg(&command).spawn();
+                                    });
+                                    window_clone.close();
+                                }
+                                glib::Propagation::Stop
+                            }
+                            Key::l => {
+                                if let Some(cmd) = commands_clone.get(7) {
+                                    let command = cmd.command.clone();
+                                    gio::spawn_blocking(move || {
+                                        let _result =
+                                            Command::new("sh").arg("-c").arg(&command).spawn();
+                                    });
+                                    window_clone.close();
+                                }
+                                glib::Propagation::Stop
+                            }
+                            _ => glib::Propagation::Proceed,
+                        }
+                    } else {
+                        glib::Propagation::Proceed
                     }
-                    glib::Propagation::Stop
                 }
-                Key::d => {
-                    if let Some(cmd) = commands_clone.get(2) {
-                        let command = cmd.command.clone();
-                        gio::spawn_blocking(move || {
-                            let _result = Command::new("sh").arg("-c").arg(&command).spawn();
-                        });
-                        window_clone.close();
-                    }
-                    glib::Propagation::Stop
-                }
-                Key::f => {
-                    if let Some(cmd) = commands_clone.get(3) {
-                        let command = cmd.command.clone();
-                        gio::spawn_blocking(move || {
-                            let _result = Command::new("sh").arg("-c").arg(&command).spawn();
-                        });
-                        window_clone.close();
-                    }
-                    glib::Propagation::Stop
-                }
-                Key::h => {
-                    if let Some(cmd) = commands_clone.get(4) {
-                        let command = cmd.command.clone();
-                        gio::spawn_blocking(move || {
-                            let _result = Command::new("sh").arg("-c").arg(&command).spawn();
-                        });
-                        window_clone.close();
-                    }
-                    glib::Propagation::Stop
-                }
-                Key::j => {
-                    if let Some(cmd) = commands_clone.get(5) {
-                        let command = cmd.command.clone();
-                        gio::spawn_blocking(move || {
-                            let _result = Command::new("sh").arg("-c").arg(&command).spawn();
-                        });
-                        window_clone.close();
-                    }
-                    glib::Propagation::Stop
-                }
-                Key::k => {
-                    if let Some(cmd) = commands_clone.get(6) {
-                        let command = cmd.command.clone();
-                        gio::spawn_blocking(move || {
-                            let _result = Command::new("sh").arg("-c").arg(&command).spawn();
-                        });
-                        window_clone.close();
-                    }
-                    glib::Propagation::Stop
-                }
-                Key::l => {
-                    if let Some(cmd) = commands_clone.get(7) {
-                        let command = cmd.command.clone();
-                        gio::spawn_blocking(move || {
-                            let _result = Command::new("sh").arg("-c").arg(&command).spawn();
-                        });
-                        window_clone.close();
-                    }
-                    glib::Propagation::Stop
-                }
-                _ => glib::Propagation::Proceed,
             }
         });
 
