@@ -144,26 +144,26 @@ impl QuickMenuApp {
             
             window {
                 background: linear-gradient(135deg, 
-                    rgb(30, 30, 35) 0%, 
-                    rgb(45, 45, 55) 50%, 
-                    rgb(35, 35, 45) 100%);
+                    rgb(15, 15, 20) 0%, 
+                    rgb(25, 25, 35) 50%, 
+                    rgb(20, 20, 30) 100%);
                 border-radius: 16px;
-                border: 2px solid rgb(120, 120, 140);
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                border: 2px solid rgb(80, 80, 100);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
                 animation: fadeIn 0.2s ease-out;
             }
             
             window.csd {
                 border-radius: 16px;
-                border: 2px solid rgb(120, 120, 140);
+                border: 2px solid rgb(80, 80, 100);
             }
             
             button {
                 background: linear-gradient(135deg, 
-                    rgb(70, 70, 85) 0%, 
-                    rgb(90, 90, 110) 50%, 
-                    rgb(75, 75, 95) 100%);
-                border: 1px solid rgb(140, 140, 160);
+                    rgb(40, 40, 55) 0%, 
+                    rgb(55, 55, 75) 50%, 
+                    rgb(45, 45, 65) 100%);
+                border: 1px solid rgb(90, 90, 110);
                 border-radius: 12px;
                 color: rgb(255, 255, 255);
                 font-weight: 600;
@@ -173,28 +173,28 @@ impl QuickMenuApp {
                 min-width: 85px;
                 min-height: 52px;
                 transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
             }
             
             button:hover {
                 background: linear-gradient(135deg, 
-                    rgb(100, 100, 125) 0%, 
-                    rgb(120, 120, 145) 50%, 
-                    rgb(105, 105, 135) 100%);
-                border-color: rgb(180, 180, 200);
+                    rgb(60, 60, 85) 0%, 
+                    rgb(75, 75, 105) 50%, 
+                    rgb(65, 65, 95) 100%);
+                border-color: rgb(120, 120, 140);
                 transform: translateY(-1px);
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
                 color: rgb(255, 255, 255);
             }
             
             button:active {
                 background: linear-gradient(135deg, 
-                    rgb(120, 120, 145) 0%, 
-                    rgb(140, 140, 165) 50%, 
-                    rgb(125, 125, 155) 100%);
+                    rgb(80, 80, 105) 0%, 
+                    rgb(95, 95, 125) 50%, 
+                    rgb(85, 85, 115) 100%);
                 transform: translateY(0px) scale(0.98);
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
                 animation: buttonPress 0.1s ease-out;
             }
             
@@ -204,7 +204,6 @@ impl QuickMenuApp {
             }
             
             .shortcut-hint {
-                color: #f1ff5e;
                 font-size: 9px;
                 font-weight: 700;
                 margin-top: 2px;
@@ -250,7 +249,14 @@ impl QuickMenuApp {
                 .build();
 
             let button = Button::with_label(&command_entry.label);
-            let shortcut_label = Label::new(Some(&format!("[{}]", shortcuts[index])));
+
+            // Create label with markup for different colors
+            let shortcut_markup = format!(
+                "<span color=\"#f1ff5e\">[</span><span color=\"#ff41aa\">{}</span><span color=\"#f1ff5e\">]</span>", 
+                shortcuts[index]
+            );
+            let shortcut_label = Label::new(None);
+            shortcut_label.set_markup(&shortcut_markup);
             shortcut_label.add_css_class("shortcut-hint");
 
             button_box.append(&button);
