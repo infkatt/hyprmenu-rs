@@ -199,12 +199,12 @@ impl QuickMenuApp {
             }
             
             button:focus {
-                outline: 2px solid rgba(100, 150, 255, 0.6);
+                outline: 2px solid #1aff28;
                 outline-offset: 2px;
             }
             
             .shortcut-hint {
-                color: rgba(100, 150, 255, 0.8);
+                color: #f1ff5e;
                 font-size: 9px;
                 font-weight: 700;
                 margin-top: 2px;
