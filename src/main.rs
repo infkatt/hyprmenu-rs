@@ -1,12 +1,14 @@
 use gdk::Key;
 use gtk::prelude::*;
-use gtk::{glib, Application, ApplicationWindow, Button, CssProvider, EventControllerKey, Grid};
+use gtk::{
+    glib, Application, ApplicationWindow, Button, CssProvider, EventControllerKey, Grid, Label,
+};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
-const APP_ID: &str = "org.example.hyprmenu-rs";
+const APP_ID: &str = "org.hyprmenu.app";
 
 #[derive(Serialize, Deserialize, Clone)]
 struct CommandEntry {
@@ -62,7 +64,7 @@ impl Default for Config {
 
 struct QuickMenuApp {
     commands: Vec<CommandEntry>,
-    config_path: PathBuf,
+    _config_path: PathBuf,
 }
 
 impl QuickMenuApp {
@@ -80,7 +82,7 @@ impl QuickMenuApp {
 
         Self {
             commands,
-            config_path,
+            _config_path: config_path,
         }
     }
 
@@ -167,9 +169,9 @@ impl QuickMenuApp {
                 font-weight: 600;
                 font-size: 11px;
                 margin: 3px;
-                padding: 14px 8px;
+                padding: 8px 6px;
                 min-width: 85px;
-                min-height: 48px;
+                min-height: 52px;
                 transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
                 text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -199,6 +201,13 @@ impl QuickMenuApp {
             button:focus {
                 outline: 2px solid rgba(100, 150, 255, 0.6);
                 outline-offset: 2px;
+            }
+            
+            .shortcut-hint {
+                color: rgba(100, 150, 255, 0.8);
+                font-size: 9px;
+                font-weight: 700;
+                margin-top: 2px;
             }
         ",
         );
@@ -231,15 +240,28 @@ impl QuickMenuApp {
             .margin_end(20)
             .build();
 
+        // Keyboard shortcuts mapping
+        let shortcuts = ['a', 's', 'd', 'f', 'h', 'j', 'k', 'l'];
+
         for (index, command_entry) in self.commands.iter().enumerate() {
+            let button_box = gtk::Box::builder()
+                .orientation(gtk::Orientation::Vertical)
+                .spacing(0)
+                .build();
+
             let button = Button::with_label(&command_entry.label);
+            let shortcut_label = Label::new(Some(&format!("[{}]", shortcuts[index])));
+            shortcut_label.add_css_class("shortcut-hint");
+
+            button_box.append(&button);
+            button_box.append(&shortcut_label);
+
             let command_clone = command_entry.command.clone();
             let window_clone = window.clone();
-
             button.connect_clicked(move |_| {
                 let cmd = command_clone.clone();
 
-                std::thread::spawn(move || {
+                gio::spawn_blocking(move || {
                     let _result = Command::new("sh").arg("-c").arg(&cmd).spawn();
                 });
 
@@ -248,20 +270,102 @@ impl QuickMenuApp {
 
             let row = (index / 4) as i32;
             let col = (index % 4) as i32;
-            grid.attach(&button, col, row, 1, 1);
+            grid.attach(&button_box, col, row, 1, 1);
         }
 
         window.set_child(Some(&grid));
 
+        // Setup keyboard shortcuts
         let key_controller = EventControllerKey::new();
+        let commands_clone = self.commands.clone();
         let window_clone = window.clone();
-        key_controller.connect_key_pressed(move |_, key, _, _| {
-            if key == Key::Escape {
+
+        key_controller.connect_key_pressed(move |_, key, _, _| match key {
+            Key::Escape => {
                 window_clone.close();
                 glib::Propagation::Stop
-            } else {
-                glib::Propagation::Proceed
             }
+            Key::a => {
+                if let Some(cmd) = commands_clone.get(0) {
+                    let command = cmd.command.clone();
+                    gio::spawn_blocking(move || {
+                        let _result = Command::new("sh").arg("-c").arg(&command).spawn();
+                    });
+                    window_clone.close();
+                }
+                glib::Propagation::Stop
+            }
+            Key::s => {
+                if let Some(cmd) = commands_clone.get(1) {
+                    let command = cmd.command.clone();
+                    gio::spawn_blocking(move || {
+                        let _result = Command::new("sh").arg("-c").arg(&command).spawn();
+                    });
+                    window_clone.close();
+                }
+                glib::Propagation::Stop
+            }
+            Key::d => {
+                if let Some(cmd) = commands_clone.get(2) {
+                    let command = cmd.command.clone();
+                    gio::spawn_blocking(move || {
+                        let _result = Command::new("sh").arg("-c").arg(&command).spawn();
+                    });
+                    window_clone.close();
+                }
+                glib::Propagation::Stop
+            }
+            Key::f => {
+                if let Some(cmd) = commands_clone.get(3) {
+                    let command = cmd.command.clone();
+                    gio::spawn_blocking(move || {
+                        let _result = Command::new("sh").arg("-c").arg(&command).spawn();
+                    });
+                    window_clone.close();
+                }
+                glib::Propagation::Stop
+            }
+            Key::h => {
+                if let Some(cmd) = commands_clone.get(4) {
+                    let command = cmd.command.clone();
+                    gio::spawn_blocking(move || {
+                        let _result = Command::new("sh").arg("-c").arg(&command).spawn();
+                    });
+                    window_clone.close();
+                }
+                glib::Propagation::Stop
+            }
+            Key::j => {
+                if let Some(cmd) = commands_clone.get(5) {
+                    let command = cmd.command.clone();
+                    gio::spawn_blocking(move || {
+                        let _result = Command::new("sh").arg("-c").arg(&command).spawn();
+                    });
+                    window_clone.close();
+                }
+                glib::Propagation::Stop
+            }
+            Key::k => {
+                if let Some(cmd) = commands_clone.get(6) {
+                    let command = cmd.command.clone();
+                    gio::spawn_blocking(move || {
+                        let _result = Command::new("sh").arg("-c").arg(&command).spawn();
+                    });
+                    window_clone.close();
+                }
+                glib::Propagation::Stop
+            }
+            Key::l => {
+                if let Some(cmd) = commands_clone.get(7) {
+                    let command = cmd.command.clone();
+                    gio::spawn_blocking(move || {
+                        let _result = Command::new("sh").arg("-c").arg(&command).spawn();
+                    });
+                    window_clone.close();
+                }
+                glib::Propagation::Stop
+            }
+            _ => glib::Propagation::Proceed,
         });
 
         window.add_controller(key_controller);
