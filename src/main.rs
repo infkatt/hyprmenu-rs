@@ -6,7 +6,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
-const APP_ID: &str = "org.example.QuickMenu";
+const APP_ID: &str = "org.example.hyprmenu-rs";
 
 #[derive(Serialize, Deserialize, Clone)]
 struct CommandEntry {
@@ -69,7 +69,7 @@ impl QuickMenuApp {
     fn new() -> Self {
         let config_dir = dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("~/.config"))
-            .join("quickmenu");
+            .join("hyprmenu");
 
         if let Err(e) = fs::create_dir_all(&config_dir) {
             eprintln!("Failed to create config directory: {}", e);
@@ -142,28 +142,28 @@ impl QuickMenuApp {
             
             window {
                 background: linear-gradient(135deg, 
-                    rgba(30, 30, 35, 0.95) 0%, 
-                    rgba(45, 45, 55, 0.95) 50%, 
-                    rgba(35, 35, 45, 0.95) 100%);
+                    rgb(30, 30, 35) 0%, 
+                    rgb(45, 45, 55) 50%, 
+                    rgb(35, 35, 45) 100%);
                 border-radius: 16px;
-                border: 2px solid rgba(120, 120, 140, 0.4);
+                border: 2px solid rgb(120, 120, 140);
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
                 animation: fadeIn 0.2s ease-out;
             }
             
             window.csd {
                 border-radius: 16px;
-                border: 2px solid rgba(120, 120, 140, 0.4);
+                border: 2px solid rgb(120, 120, 140);
             }
             
             button {
                 background: linear-gradient(135deg, 
-                    rgba(70, 70, 85, 0.9) 0%, 
-                    rgba(90, 90, 110, 0.9) 50%, 
-                    rgba(75, 75, 95, 0.9) 100%);
-                border: 1px solid rgba(140, 140, 160, 0.6);
+                    rgb(70, 70, 85) 0%, 
+                    rgb(90, 90, 110) 50%, 
+                    rgb(75, 75, 95) 100%);
+                border: 1px solid rgb(140, 140, 160);
                 border-radius: 12px;
-                color: rgba(255, 255, 255, 0.95);
+                color: rgb(255, 255, 255);
                 font-weight: 600;
                 font-size: 11px;
                 margin: 3px;
@@ -177,20 +177,20 @@ impl QuickMenuApp {
             
             button:hover {
                 background: linear-gradient(135deg, 
-                    rgba(100, 100, 125, 0.95) 0%, 
-                    rgba(120, 120, 145, 0.95) 50%, 
-                    rgba(105, 105, 135, 0.95) 100%);
-                border-color: rgba(180, 180, 200, 0.8);
+                    rgb(100, 100, 125) 0%, 
+                    rgb(120, 120, 145) 50%, 
+                    rgb(105, 105, 135) 100%);
+                border-color: rgb(180, 180, 200);
                 transform: translateY(-1px);
                 box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-                color: rgba(255, 255, 255, 1.0);
+                color: rgb(255, 255, 255);
             }
             
             button:active {
                 background: linear-gradient(135deg, 
-                    rgba(120, 120, 145, 1.0) 0%, 
-                    rgba(140, 140, 165, 1.0) 50%, 
-                    rgba(125, 125, 155, 1.0) 100%);
+                    rgb(120, 120, 145) 0%, 
+                    rgb(140, 140, 165) 50%, 
+                    rgb(125, 125, 155) 100%);
                 transform: translateY(0px) scale(0.98);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
                 animation: buttonPress 0.1s ease-out;
@@ -213,14 +213,13 @@ impl QuickMenuApp {
     fn build_ui(&self, app: &Application) {
         let window = ApplicationWindow::builder()
             .application(app)
-            .title("QuickMenu")
+            .title("hyprmenu")
             .default_width(420)
             .default_height(160)
             .resizable(false)
             .decorated(false)
             .build();
 
-        // Add CSS class for rounded corners
         window.add_css_class("csd");
 
         let grid = Grid::builder()
