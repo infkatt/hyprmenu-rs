@@ -1,4 +1,4 @@
-use gtk::CssProvider; // Remove the unused prelude import
+use gtk::CssProvider;
 
 pub fn setup_styling() {
     let provider = CssProvider::new();
@@ -84,13 +84,13 @@ pub fn setup_styling() {
         
         .help-label {
             color: rgba(200, 200, 200, 0.8);
-            font-size: 8px;
+            font-size: 11px;  /* Increased from 8px to 11px */
             margin: 6px 0;
         }
         
         .help-content {
             color: rgba(220, 220, 220, 0.95);
-            font-size: 10px;
+            font-size: 11px;  /* Increased from 10px to 11px (+1pt) */
             margin: 15px;
             font-family: monospace;
         }

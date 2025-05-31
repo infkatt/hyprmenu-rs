@@ -74,7 +74,7 @@ pub fn create_main_view(
         grid.attach(&button_box, col, row, 1, 1);
     }
 
-    // Help label
+    // Help label - now larger and more visible
     let help_label = Label::new(Some("Navigate: a s d f h j k l • Close: Esc • Help: ?"));
     help_label.add_css_class("help-label");
     help_label.set_halign(gtk::Align::Center);
@@ -96,21 +96,22 @@ pub fn create_help_view() -> GtkBox {
     help_title.set_halign(gtk::Align::Center);
     help_title.set_margin_top(10);
 
+    // Restore colored help text with increased font size
     let help_text = "
-<b><span color=\"#ffffff\" size=\"11pt\">Keyboard Navigation:</span></b>
+<b><span color=\"#ffffff\" size=\"12pt\">Keyboard Navigation:</span></b>
 • <span color=\"#ff41aa\" weight=\"bold\">a,s,d,f,h,j,k,l</span> - Execute corresponding command
 • <span color=\"#1aff28\" weight=\"bold\">Escape</span> - Close menu / Return to main view
 • <span color=\"#f1ff5e\" weight=\"bold\">?</span> - Show/hide this help
 
-<b><span color=\"#ffffff\" size=\"11pt\">Mouse Navigation:</span></b>
+<b><span color=\"#ffffff\" size=\"12pt\">Mouse Navigation:</span></b>
 • Click any button to execute command
 
-<b><span color=\"#ffffff\" size=\"11pt\">Configuration:</span></b>
+<b><span color=\"#ffffff\" size=\"12pt\">Configuration:</span></b>
 • Config file: <span color=\"#f1ff5e\">~/.config/hyprmenu/commands.json</span>
 • Edit the JSON file to customize commands
 • Restart hyprmenu to reload configuration
 
-<b><span color=\"#ffffff\" size=\"11pt\">Tips:</span></b>
+<b><span color=\"#ffffff\" size=\"12pt\">Tips:</span></b>
 • Use keyboard shortcuts for fastest navigation
 • Commands execute immediately and close the menu
 • Customize your workflow by editing the config file
