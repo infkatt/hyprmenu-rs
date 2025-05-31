@@ -160,13 +160,14 @@ impl QuickMenuApp {
             }
             
             .ascii-title {
-                color: #ffffff;
+                color: rgba(180, 180, 180, 0.6);
                 font-family: 'Courier New', 'Liberation Mono', monospace;
-                font-size: 11px;
-                font-weight: 700;
-                margin-bottom: 8px;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-                line-height: 1.0;
+                font-size: 7px;
+                font-weight: 400;
+                margin-bottom: 4px;
+                margin-top: 4px;
+                text-shadow: none;
+                line-height: 0.9;
             }
             
             .help-label {
@@ -252,25 +253,21 @@ impl QuickMenuApp {
     fn create_main_view(&self, stack: &Stack, window: &ApplicationWindow) -> GtkBox {
         let main_box = GtkBox::new(Orientation::Vertical, 0);
 
-        // ASCII Art Title
+        // Much smaller ASCII Art Title
         let ascii_title = "
-██╗  ██╗██╗   ██╗██████╗ ██████╗ ███╗   ███╗███████╗███╗   ██╗██╗   ██╗
-██║  ██║╚██╗ ██╔╝██╔══██╗██╔══██╗████╗ ████║██╔════╝████╗  ██║██║   ██║
-███████║ ╚████╔╝ ██████╔╝██████╔╝██╔████╔██║█████╗  ██╔██╗ ██║██║   ██║
-██╔══██║  ╚██╔╝  ██╔═══╝ ██╔══██╗██║╚██╔╝██║██╔══╝  ██║╚██╗██║██║   ██║
-██║  ██║   ██║   ██║     ██║  ██║██║ ╚═╝ ██║███████╗██║ ╚████║╚██████╔╝
-╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝";
+┌─┐ ┬ ┬┌─┐┬─┐┌┬┐┌─┐┌┐┌┬ ┬
+├─┤ ├─┤├─┘├┬┘│││├┤ ││││ │
+┴ ┴o┴ ┴┴  ┴└─┴ ┴└─┘┘└┘└─┘";
 
         let title_label = Label::new(Some(ascii_title));
         title_label.add_css_class("ascii-title");
         title_label.set_halign(gtk::Align::Center);
-        title_label.set_margin_top(8);
 
         // Grid container
         let grid = Grid::builder()
             .row_spacing(6)
             .column_spacing(6)
-            .margin_top(10)
+            .margin_top(8)
             .margin_bottom(15)
             .margin_start(20)
             .margin_end(20)
@@ -388,7 +385,7 @@ impl QuickMenuApp {
             .application(app)
             .title("hyprmenu")
             .default_width(500)
-            .default_height(350)
+            .default_height(280)
             .resizable(false)
             .decorated(false)
             .build();
