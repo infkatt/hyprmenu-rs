@@ -159,37 +159,12 @@ impl QuickMenuApp {
                 border: 2px solid rgb(80, 80, 100);
             }
             
-            .ascii-title {
-                color: rgba(180, 180, 180, 0.6);
-                font-family: 'Courier New', 'Liberation Mono', monospace;
-                font-size: 7px;
-                font-weight: 400;
-                margin-bottom: 4px;
-                margin-top: 4px;
-                text-shadow: none;
-                line-height: 0.9;
-            }
-            
-            .help-label {
-                color: rgba(200, 200, 200, 0.8);
-                font-size: 10px;
-                margin-top: 8px;
-                text-align: center;
-            }
-            
-            .help-content {
-                color: rgba(220, 220, 220, 0.95);
-                font-size: 11px;
-                margin: 20px;
-                font-family: monospace;
-            }
-            
-            .help-title {
-                color: #ffffff;
-                font-size: 14px;
+            .title-text {
+                color: #f1ff5e;
+                font-size: 14pt;
                 font-weight: 700;
-                margin-bottom: 15px;
-                text-align: center;
+                margin: 6px 0;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             }
             
             button {
@@ -202,10 +177,10 @@ impl QuickMenuApp {
                 color: rgb(255, 255, 255);
                 font-weight: 600;
                 font-size: 11px;
-                margin: 3px;
-                padding: 8px 6px;
-                min-width: 85px;
-                min-height: 52px;
+                margin: 2px;
+                padding: 6px 4px;
+                min-width: 80px;
+                min-height: 45px;
                 transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
                 text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
@@ -240,6 +215,27 @@ impl QuickMenuApp {
             .shortcut-hint {
                 margin-top: 2px;
             }
+            
+            .help-label {
+                color: rgba(200, 200, 200, 0.8);
+                font-size: 9px;
+                margin: 4px 0;
+            }
+            
+            .help-content {
+                color: rgba(220, 220, 220, 0.95);
+                font-size: 11px;
+                margin: 20px;
+                font-family: monospace;
+            }
+            
+            .help-title {
+                color: #ffffff;
+                font-size: 14px;
+                font-weight: 700;
+                margin-bottom: 15px;
+                text-align: center;
+            }
         ",
         );
 
@@ -250,27 +246,22 @@ impl QuickMenuApp {
         );
     }
 
-    fn create_main_view(&self, stack: &Stack, window: &ApplicationWindow) -> GtkBox {
+    fn create_main_view(&self, _stack: &Stack, window: &ApplicationWindow) -> GtkBox {
         let main_box = GtkBox::new(Orientation::Vertical, 0);
 
-        // Much smaller ASCII Art Title
-        let ascii_title = "
-┌─┐ ┬ ┬┌─┐┬─┐┌┬┐┌─┐┌┐┌┬ ┬
-├─┤ ├─┤├─┘├┬┘│││├┤ ││││ │
-┴ ┴o┴ ┴┴  ┴└─┴ ┴└─┘┘└┘└─┘";
-
-        let title_label = Label::new(Some(ascii_title));
-        title_label.add_css_class("ascii-title");
+        // Modern text title
+        let title_label = Label::new(None);
+        title_label.set_markup("<span class='title-text'>⚡ HYPRMENU ⚡</span>");
         title_label.set_halign(gtk::Align::Center);
 
         // Grid container
         let grid = Grid::builder()
-            .row_spacing(6)
-            .column_spacing(6)
-            .margin_top(8)
-            .margin_bottom(15)
-            .margin_start(20)
-            .margin_end(20)
+            .row_spacing(4)
+            .column_spacing(4)
+            .margin_top(4)
+            .margin_bottom(8)
+            .margin_start(12)
+            .margin_end(12)
             .halign(gtk::Align::Center)
             .build();
 
@@ -315,12 +306,10 @@ impl QuickMenuApp {
         }
 
         // Help label at bottom
-        let help_label = Label::new(Some("Navigate: a,s,d,f,h,j,k,l • Close: Esc • Help: ?"));
+        let help_label = Label::new(Some("Navigate: a s d f h j k l • Close: Esc • Help: ?"));
         help_label.add_css_class("help-label");
         help_label.set_halign(gtk::Align::Center);
-        help_label.set_margin_bottom(8);
 
-        // Add all components to main box
         main_box.append(&title_label);
         main_box.append(&grid);
         main_box.append(&help_label);
@@ -384,8 +373,8 @@ impl QuickMenuApp {
         let window = ApplicationWindow::builder()
             .application(app)
             .title("hyprmenu")
-            .default_width(500)
-            .default_height(280)
+            .default_width(420)
+            .default_height(200)
             .resizable(false)
             .decorated(false)
             .build();
