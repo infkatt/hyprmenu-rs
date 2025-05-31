@@ -234,7 +234,6 @@ impl QuickMenuApp {
                 font-size: 14px;
                 font-weight: 700;
                 margin-bottom: 15px;
-                text-align: center;
             }
         ",
         );
@@ -249,9 +248,10 @@ impl QuickMenuApp {
     fn create_main_view(&self, _stack: &Stack, window: &ApplicationWindow) -> GtkBox {
         let main_box = GtkBox::new(Orientation::Vertical, 0);
 
-        // Modern text title
+        // Modern text title - fix markup and CSS class application
         let title_label = Label::new(None);
-        title_label.set_markup("<span class='title-text'>⚡ HYPRMENU ⚡</span>");
+        title_label.set_markup("⚡ HYPRMENU ⚡");
+        title_label.add_css_class("title-text");
         title_label.set_halign(gtk::Align::Center);
 
         // Grid container
@@ -322,6 +322,7 @@ impl QuickMenuApp {
 
         let help_title = Label::new(Some("HYPRMENU - HELP"));
         help_title.add_css_class("help-title");
+        help_title.set_halign(gtk::Align::Center); // Use proper GTK alignment instead of CSS
         help_title.set_margin_top(15);
 
         let help_text = "
