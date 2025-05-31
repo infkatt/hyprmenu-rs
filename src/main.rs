@@ -1,38 +1,129 @@
 use gdk::Key;
 use gtk::prelude::*;
 use gtk::{glib, Application, ApplicationWindow, Button, CssProvider, EventControllerKey, Grid};
-use std::sync::OnceLock;
-use tokio::runtime::{Builder, Runtime};
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::PathBuf;
+use std::process::Command;
 
 const APP_ID: &str = "org.example.QuickMenu";
 
-fn runtime() -> &'static Runtime {
-    static RUNTIME: OnceLock<Runtime> = OnceLock::new();
-    RUNTIME.get_or_init(|| {
-        Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .expect("Setting up tokio runtime needs to succeed.")
-    })
+#[derive(Serialize, Deserialize, Clone)]
+struct CommandEntry {
+    label: String,
+    command: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Config {
+    commands: Vec<CommandEntry>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            commands: vec![
+                CommandEntry {
+                    label: "Terminal".to_string(),
+                    command: "kitty".to_string(),
+                },
+                CommandEntry {
+                    label: "Firefox".to_string(),
+                    command: "firefox".to_string(),
+                },
+                CommandEntry {
+                    label: "Files".to_string(),
+                    command: "thunar".to_string(),
+                },
+                CommandEntry {
+                    label: "VS Code".to_string(),
+                    command: "code".to_string(),
+                },
+                CommandEntry {
+                    label: "Spotify".to_string(),
+                    command: "spotify".to_string(),
+                },
+                CommandEntry {
+                    label: "Discord".to_string(),
+                    command: "discord".to_string(),
+                },
+                CommandEntry {
+                    label: "Screenshot".to_string(),
+                    command: "grim -g \"$(slurp)\" - | wl-copy".to_string(),
+                },
+                CommandEntry {
+                    label: "Lock".to_string(),
+                    command: "hyprlock".to_string(),
+                },
+            ],
+        }
+    }
 }
 
 struct QuickMenuApp {
-    commands: Vec<(&'static str, &'static str)>,
+    commands: Vec<CommandEntry>,
+    config_path: PathBuf,
 }
 
 impl QuickMenuApp {
     fn new() -> Self {
+        let config_dir = dirs::config_dir()
+            .unwrap_or_else(|| PathBuf::from("~/.config"))
+            .join("quickmenu");
+
+        // Create config directory if it doesn't exist
+        if let Err(e) = fs::create_dir_all(&config_dir) {
+            eprintln!("Failed to create config directory: {}", e);
+        }
+
+        let config_path = config_dir.join("commands.json");
+        let commands = Self::load_config(&config_path);
+
         Self {
-            commands: vec![
-                ("Terminal", "kitty"),
-                ("Firefox", "firefox"),
-                ("Files", "thunar"),
-                ("VS Code", "code"),
-                ("Spotify", "spotify"),
-                ("Discord", "discord"),
-                ("Screenshot", "grim -g \"$(slurp)\" - | wl-copy"),
-                ("Lock", "hyprlock"),
-            ],
+            commands,
+            config_path,
+        }
+    }
+
+    fn load_config(config_path: &PathBuf) -> Vec<CommandEntry> {
+        match fs::read_to_string(config_path) {
+            Ok(content) => match serde_json::from_str::<Config>(&content) {
+                Ok(config) => {
+                    if config.commands.len() == 8 {
+                        config.commands
+                    } else {
+                        eprintln!("Config must contain exactly 8 commands. Using defaults.");
+                        let default_config = Config::default();
+                        Self::save_config(config_path, &default_config);
+                        default_config.commands
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to parse config: {}. Using defaults.", e);
+                    let default_config = Config::default();
+                    Self::save_config(config_path, &default_config);
+                    default_config.commands
+                }
+            },
+            Err(_) => {
+                // Config file doesn't exist, create default
+                let default_config = Config::default();
+                Self::save_config(config_path, &default_config);
+                default_config.commands
+            }
+        }
+    }
+
+    fn save_config(config_path: &PathBuf, config: &Config) {
+        match serde_json::to_string_pretty(config) {
+            Ok(json) => {
+                if let Err(e) = fs::write(config_path, json) {
+                    eprintln!("Failed to save config: {}", e);
+                } else {
+                    println!("Config saved to: {}", config_path.display());
+                }
+            }
+            Err(e) => eprintln!("Failed to serialize config: {}", e),
         }
     }
 
@@ -54,8 +145,8 @@ impl QuickMenuApp {
                 font-weight: bold;
                 margin: 4px;
                 padding: 12px;
-                min-width: 120px;
-                min-height: 40px;
+                min-width: 90px;
+                min-height: 50px;
             }
             
             button:hover {
@@ -80,12 +171,13 @@ impl QuickMenuApp {
         let window = ApplicationWindow::builder()
             .application(app)
             .title("QuickMenu")
-            .default_width(280)
-            .default_height(240)
+            .default_width(400)
+            .default_height(140)
             .resizable(false)
             .decorated(false)
             .build();
 
+        // Create 4x2 grid for 8 buttons (4 columns, 2 rows)
         let grid = Grid::builder()
             .row_spacing(8)
             .column_spacing(8)
@@ -95,31 +187,31 @@ impl QuickMenuApp {
             .margin_end(16)
             .build();
 
-        for (index, (label, command)) in self.commands.iter().enumerate() {
-            let button = Button::with_label(label);
-            let command_clone = command.to_string();
+        // Create buttons for each command
+        for (index, command_entry) in self.commands.iter().enumerate() {
+            let button = Button::with_label(&command_entry.label);
+            let command_clone = command_entry.command.clone();
             let window_clone = window.clone();
 
             button.connect_clicked(move |_| {
                 let cmd = command_clone.clone();
 
-                runtime().spawn(async move {
-                    let _result = tokio::process::Command::new("sh")
-                        .arg("-c")
-                        .arg(&cmd)
-                        .spawn();
+                std::thread::spawn(move || {
+                    let _result = Command::new("sh").arg("-c").arg(&cmd).spawn();
                 });
 
                 window_clone.close();
             });
 
-            let row = (index / 2) as i32;
-            let col = (index % 2) as i32;
+            // 4x2 layout: 4 columns, 2 rows
+            let row = (index / 4) as i32;
+            let col = (index % 4) as i32;
             grid.attach(&button, col, row, 1, 1);
         }
 
         window.set_child(Some(&grid));
 
+        // Setup Escape key
         let key_controller = EventControllerKey::new();
         let window_clone = window.clone();
         key_controller.connect_key_pressed(move |_, key, _, _| {
