@@ -137,12 +137,6 @@ impl QuickMenuApp {
                 to { opacity: 1; transform: scale(1.0); }
             }
             
-            @keyframes buttonPress {
-                0% { transform: scale(1.0); }
-                50% { transform: scale(0.95); }
-                100% { transform: scale(1.0); }
-            }
-            
             window {
                 background: linear-gradient(135deg, 
                     rgb(15, 15, 20) 0%, 
@@ -161,9 +155,9 @@ impl QuickMenuApp {
             
             .title-text {
                 color: #f1ff5e;
-                font-size: 14pt;
+                font-size: 12pt;
                 font-weight: 700;
-                margin: 6px 0;
+                margin: 8px 0;
                 text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             }
             
@@ -176,10 +170,10 @@ impl QuickMenuApp {
                 border-radius: 12px;
                 color: rgb(255, 255, 255);
                 font-weight: 600;
-                font-size: 11px;
-                margin: 2px;
-                padding: 6px 4px;
-                min-width: 80px;
+                font-size: 10px;
+                margin: 3px;
+                padding: 8px 6px;
+                min-width: 85px;
                 min-height: 45px;
                 transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -204,7 +198,6 @@ impl QuickMenuApp {
                     rgb(85, 85, 115) 100%);
                 transform: translateY(0px) scale(0.98);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-                animation: buttonPress 0.1s ease-out;
             }
             
             button:focus {
@@ -214,26 +207,13 @@ impl QuickMenuApp {
             
             .shortcut-hint {
                 margin-top: 2px;
+                font-size: 11px;
             }
             
             .help-label {
                 color: rgba(200, 200, 200, 0.8);
-                font-size: 9px;
-                margin: 4px 0;
-            }
-            
-            .help-content {
-                color: rgba(220, 220, 220, 0.95);
-                font-size: 11px;
-                margin: 20px;
-                font-family: monospace;
-            }
-            
-            .help-title {
-                color: #ffffff;
-                font-size: 14px;
-                font-weight: 700;
-                margin-bottom: 15px;
+                font-size: 8px;
+                margin: 6px 0;
             }
         ",
         );
@@ -247,22 +227,28 @@ impl QuickMenuApp {
 
     fn create_main_view(&self, _stack: &Stack, window: &ApplicationWindow) -> GtkBox {
         let main_box = GtkBox::new(Orientation::Vertical, 0);
+        main_box.set_homogeneous(false);
+        main_box.set_vexpand(true); // Make the main box expand vertically
+        main_box.set_hexpand(true); // Make the main box expand horizontally
 
-        // Modern text title - fix markup and CSS class application
+        // Compact title
         let title_label = Label::new(None);
         title_label.set_markup("⚡ HYPRMENU ⚡");
         title_label.add_css_class("title-text");
         title_label.set_halign(gtk::Align::Center);
+        title_label.set_valign(gtk::Align::Start);
 
-        // Grid container
+        // Grid container with better expansion
         let grid = Grid::builder()
-            .row_spacing(4)
-            .column_spacing(4)
-            .margin_top(4)
-            .margin_bottom(8)
-            .margin_start(12)
-            .margin_end(12)
+            .row_spacing(8) // Increased spacing
+            .column_spacing(8) // Increased spacing
+            .margin_top(15) // More top margin
+            .margin_bottom(15) // More bottom margin
+            .margin_start(20) // More side margins
+            .margin_end(20) // More side margins
             .halign(gtk::Align::Center)
+            .valign(gtk::Align::Center) // Center the grid vertically
+            .vexpand(true) // Make grid expand vertically
             .build();
 
         // Keyboard shortcuts mapping
@@ -271,14 +257,15 @@ impl QuickMenuApp {
         for (index, command_entry) in self.commands.iter().enumerate() {
             let button_box = GtkBox::builder()
                 .orientation(gtk::Orientation::Vertical)
-                .spacing(0)
+                .spacing(2)
+                .halign(gtk::Align::Center)
                 .build();
 
             let button = Button::with_label(&command_entry.label);
 
-            // Create label with larger markup for different colors
+            // Restore colored shortcut markup
             let shortcut_markup = format!(
-                "<span color=\"#f1ff5e\" size=\"12pt\">[</span><span color=\"#ff41aa\" size=\"13pt\" weight=\"bold\">{}</span><span color=\"#f1ff5e\" size=\"12pt\">]</span>", 
+                "<span color=\"#f1ff5e\" size=\"11pt\">[</span><span color=\"#ff41aa\" size=\"12pt\" weight=\"bold\">{}</span><span color=\"#f1ff5e\" size=\"11pt\">]</span>", 
                 shortcuts[index]
             );
             let shortcut_label = Label::new(None);
@@ -309,6 +296,7 @@ impl QuickMenuApp {
         let help_label = Label::new(Some("Navigate: a s d f h j k l • Close: Esc • Help: ?"));
         help_label.add_css_class("help-label");
         help_label.set_halign(gtk::Align::Center);
+        help_label.set_valign(gtk::Align::End);
 
         main_box.append(&title_label);
         main_box.append(&grid);
@@ -322,37 +310,36 @@ impl QuickMenuApp {
 
         let help_title = Label::new(Some("HYPRMENU - HELP"));
         help_title.add_css_class("help-title");
-        help_title.set_halign(gtk::Align::Center); // Use proper GTK alignment instead of CSS
-        help_title.set_margin_top(15);
+        help_title.set_halign(gtk::Align::Center);
+        help_title.set_margin_top(10);
 
         let help_text = "
-<b><span color=\"#ffffff\" size=\"12pt\">Keyboard Navigation:</span></b>
+<b><span color=\"#ffffff\" size=\"11pt\">Keyboard Navigation:</span></b>
 • <span color=\"#ff41aa\" weight=\"bold\">a,s,d,f,h,j,k,l</span> - Execute corresponding command
 • <span color=\"#1aff28\" weight=\"bold\">Escape</span> - Close menu / Return to main view
 • <span color=\"#f1ff5e\" weight=\"bold\">?</span> - Show/hide this help
 
-<b><span color=\"#ffffff\" size=\"12pt\">Mouse Navigation:</span></b>
+<b><span color=\"#ffffff\" size=\"11pt\">Mouse Navigation:</span></b>
 • Click any button to execute command
 
-<b><span color=\"#ffffff\" size=\"12pt\">Configuration:</span></b>
+<b><span color=\"#ffffff\" size=\"11pt\">Configuration:</span></b>
 • Config file: <span color=\"#f1ff5e\">~/.config/hyprmenu/commands.json</span>
 • Edit the JSON file to customize commands
 • Restart hyprmenu to reload configuration
 
-<b><span color=\"#ffffff\" size=\"12pt\">Command Layout:</span></b>
+<b><span color=\"#ffffff\" size=\"11pt\">Command Layout:</span></b>
 <span font_family=\"monospace\" color=\"#ffffff\">
-┌─────────────┬─────────────┬─────────────┬─────────────┐
-│ [a] Terminal│ [s] Firefox │ [d] Files   │ [f] VS Code │
-├─────────────┼─────────────┼─────────────┼─────────────┤
-│ [h] Spotify │ [j] Discord │[k]Screenshot│ [l] Lock    │
-└─────────────┴─────────────┴─────────────┴─────────────┘
+┌──────────┬──────────┬──────────┬──────────┐
+│[a]Terminal│[s]Firefox│ [d]Files │[f]VS Code│
+├──────────┼──────────┼──────────┼──────────┤
+│[h]Spotify│[j]Discord│[k]Screen │ [l]Lock  │
+└──────────┴──────────┴──────────┴──────────┘
 </span>
 
-<b><span color=\"#ffffff\" size=\"12pt\">Tips:</span></b>
+<b><span color=\"#ffffff\" size=\"11pt\">Tips:</span></b>
 • Use keyboard shortcuts for fastest navigation
 • Commands execute immediately and close the menu
 • Customize your workflow by editing the config file
-• Press Escape to quickly close without executing anything
 
 <span color=\"#f1ff5e\" weight=\"bold\">Press Escape to return to main menu</span>";
 
@@ -360,9 +347,9 @@ impl QuickMenuApp {
         help_content.set_markup(help_text);
         help_content.add_css_class("help-content");
         help_content.set_justify(gtk::Justification::Left);
-        help_content.set_margin_start(20);
-        help_content.set_margin_end(20);
-        help_content.set_margin_bottom(15);
+        help_content.set_margin_start(15);
+        help_content.set_margin_end(15);
+        help_content.set_margin_bottom(10);
 
         help_box.append(&help_title);
         help_box.append(&help_content);
@@ -374,12 +361,15 @@ impl QuickMenuApp {
         let window = ApplicationWindow::builder()
             .application(app)
             .title("hyprmenu")
-            .default_width(420)
-            .default_height(200)
+            .default_width(500)
+            .default_height(180) // Reduced from 300 to 180
             .resizable(false)
             .decorated(false)
             .build();
 
+        // Force the exact size and prevent expansion
+        window.set_size_request(500, 180); // Reduced height
+        window.set_resizable(false);
         window.add_css_class("csd");
 
         // Create stack for switching between main and help views
@@ -398,7 +388,7 @@ impl QuickMenuApp {
 
         window.set_child(Some(&stack));
 
-        // Setup keyboard shortcuts
+        // Setup keyboard shortcuts (keeping the same key handler code...)
         let key_controller = EventControllerKey::new();
         let commands_clone = self.commands.clone();
         let window_clone = window.clone();
