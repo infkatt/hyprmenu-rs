@@ -215,6 +215,13 @@ impl QuickMenuApp {
                 font-size: 8px;
                 margin: 6px 0;
             }
+            
+            .help-content {
+                color: rgba(220, 220, 220, 0.95);
+                font-size: 10px;
+                margin: 15px;
+                font-family: monospace;
+            }
         ",
         );
 
@@ -308,40 +315,35 @@ impl QuickMenuApp {
     fn create_help_view(&self) -> GtkBox {
         let help_box = GtkBox::new(Orientation::Vertical, 0);
 
-        let help_title = Label::new(Some("HYPRMENU - HELP"));
-        help_title.add_css_class("help-title");
+        // Style the help title the same as main title
+        let help_title = Label::new(None);
+        help_title.set_markup("⚡ HYPRMENU - HELP ⚡");
+        help_title.add_css_class("title-text"); // Use same class as main title
         help_title.set_halign(gtk::Align::Center);
         help_title.set_margin_top(10);
 
+        // Updated help text without command layout section
         let help_text = "
-<b><span color=\"#ffffff\" size=\"11pt\">Keyboard Navigation:</span></b>
-• <span color=\"#ff41aa\" weight=\"bold\">a,s,d,f,h,j,k,l</span> - Execute corresponding command
-• <span color=\"#1aff28\" weight=\"bold\">Escape</span> - Close menu / Return to main view
-• <span color=\"#f1ff5e\" weight=\"bold\">?</span> - Show/hide this help
+    <b><span color=\"#ffffff\" size=\"11pt\">Keyboard Navigation:</span></b>
+    • <span color=\"#ff41aa\" weight=\"bold\">a,s,d,f,h,j,k,l</span> - Execute corresponding command
+    • <span color=\"#1aff28\" weight=\"bold\">Escape</span> - Close menu / Return to main view
+    • <span color=\"#f1ff5e\" weight=\"bold\">?</span> - Show/hide this help
 
-<b><span color=\"#ffffff\" size=\"11pt\">Mouse Navigation:</span></b>
-• Click any button to execute command
+    <b><span color=\"#ffffff\" size=\"11pt\">Mouse Navigation:</span></b>
+    • Click any button to execute command
 
-<b><span color=\"#ffffff\" size=\"11pt\">Configuration:</span></b>
-• Config file: <span color=\"#f1ff5e\">~/.config/hyprmenu/commands.json</span>
-• Edit the JSON file to customize commands
-• Restart hyprmenu to reload configuration
+    <b><span color=\"#ffffff\" size=\"11pt\">Configuration:</span></b>
+    • Config file: <span color=\"#f1ff5e\">~/.config/hyprmenu/commands.json</span>
+    • Edit the JSON file to customize commands
+    • Restart hyprmenu to reload configuration
 
-<b><span color=\"#ffffff\" size=\"11pt\">Command Layout:</span></b>
-<span font_family=\"monospace\" color=\"#ffffff\">
-┌──────────┬──────────┬──────────┬──────────┐
-│[a]Terminal│[s]Firefox│ [d]Files │[f]VS Code│
-├──────────┼──────────┼──────────┼──────────┤
-│[h]Spotify│[j]Discord│[k]Screen │ [l]Lock  │
-└──────────┴──────────┴──────────┴──────────┘
-</span>
+    <b><span color=\"#ffffff\" size=\"11pt\">Tips:</span></b>
+    • Use keyboard shortcuts for fastest navigation
+    • Commands execute immediately and close the menu
+    • Customize your workflow by editing the config file
+    • Press Escape to quickly close without executing anything
 
-<b><span color=\"#ffffff\" size=\"11pt\">Tips:</span></b>
-• Use keyboard shortcuts for fastest navigation
-• Commands execute immediately and close the menu
-• Customize your workflow by editing the config file
-
-<span color=\"#f1ff5e\" weight=\"bold\">Press Escape to return to main menu</span>";
+    <span color=\"#f1ff5e\" weight=\"bold\">Press Escape to return to main menu</span>";
 
         let help_content = Label::new(None);
         help_content.set_markup(help_text);
