@@ -71,7 +71,6 @@ impl QuickMenuApp {
             .unwrap_or_else(|| PathBuf::from("~/.config"))
             .join("quickmenu");
 
-        // Create config directory if it doesn't exist
         if let Err(e) = fs::create_dir_all(&config_dir) {
             eprintln!("Failed to create config directory: {}", e);
         }
@@ -106,7 +105,6 @@ impl QuickMenuApp {
                 }
             },
             Err(_) => {
-                // Config file doesn't exist, create default
                 let default_config = Config::default();
                 Self::save_config(config_path, &default_config);
                 default_config.commands
@@ -131,31 +129,76 @@ impl QuickMenuApp {
         let provider = CssProvider::new();
         provider.load_from_string(
             "
+            @keyframes fadeIn {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1.0); }
+            }
+            
+            @keyframes buttonPress {
+                0% { transform: scale(1.0); }
+                50% { transform: scale(0.95); }
+                100% { transform: scale(1.0); }
+            }
+            
             window {
-                background-color: rgba(40, 40, 40, 0.95);
-                border-radius: 12px;
-                border: 2px solid rgba(100, 100, 100, 0.3);
+                background: linear-gradient(135deg, 
+                    rgba(30, 30, 35, 0.95) 0%, 
+                    rgba(45, 45, 55, 0.95) 50%, 
+                    rgba(35, 35, 45, 0.95) 100%);
+                border-radius: 16px;
+                border: 2px solid rgba(120, 120, 140, 0.4);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                animation: fadeIn 0.2s ease-out;
+            }
+            
+            window.csd {
+                border-radius: 16px;
+                border: 2px solid rgba(120, 120, 140, 0.4);
             }
             
             button {
-                background-color: rgba(60, 60, 60, 0.8);
-                border: 1px solid rgba(120, 120, 120, 0.5);
-                border-radius: 8px;
-                color: white;
-                font-weight: bold;
-                margin: 4px;
-                padding: 12px;
-                min-width: 90px;
-                min-height: 50px;
+                background: linear-gradient(135deg, 
+                    rgba(70, 70, 85, 0.9) 0%, 
+                    rgba(90, 90, 110, 0.9) 50%, 
+                    rgba(75, 75, 95, 0.9) 100%);
+                border: 1px solid rgba(140, 140, 160, 0.6);
+                border-radius: 12px;
+                color: rgba(255, 255, 255, 0.95);
+                font-weight: 600;
+                font-size: 11px;
+                margin: 3px;
+                padding: 14px 8px;
+                min-width: 85px;
+                min-height: 48px;
+                transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             }
             
             button:hover {
-                background-color: rgba(80, 80, 80, 0.9);
-                border-color: rgba(150, 150, 150, 0.7);
+                background: linear-gradient(135deg, 
+                    rgba(100, 100, 125, 0.95) 0%, 
+                    rgba(120, 120, 145, 0.95) 50%, 
+                    rgba(105, 105, 135, 0.95) 100%);
+                border-color: rgba(180, 180, 200, 0.8);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+                color: rgba(255, 255, 255, 1.0);
             }
             
             button:active {
-                background-color: rgba(100, 100, 100, 0.8);
+                background: linear-gradient(135deg, 
+                    rgba(120, 120, 145, 1.0) 0%, 
+                    rgba(140, 140, 165, 1.0) 50%, 
+                    rgba(125, 125, 155, 1.0) 100%);
+                transform: translateY(0px) scale(0.98);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                animation: buttonPress 0.1s ease-out;
+            }
+            
+            button:focus {
+                outline: 2px solid rgba(100, 150, 255, 0.6);
+                outline-offset: 2px;
             }
         ",
         );
@@ -171,23 +214,24 @@ impl QuickMenuApp {
         let window = ApplicationWindow::builder()
             .application(app)
             .title("QuickMenu")
-            .default_width(400)
-            .default_height(140)
+            .default_width(420)
+            .default_height(160)
             .resizable(false)
             .decorated(false)
             .build();
 
-        // Create 4x2 grid for 8 buttons (4 columns, 2 rows)
+        // Add CSS class for rounded corners
+        window.add_css_class("csd");
+
         let grid = Grid::builder()
-            .row_spacing(8)
-            .column_spacing(8)
-            .margin_top(16)
-            .margin_bottom(16)
-            .margin_start(16)
-            .margin_end(16)
+            .row_spacing(6)
+            .column_spacing(6)
+            .margin_top(20)
+            .margin_bottom(20)
+            .margin_start(20)
+            .margin_end(20)
             .build();
 
-        // Create buttons for each command
         for (index, command_entry) in self.commands.iter().enumerate() {
             let button = Button::with_label(&command_entry.label);
             let command_clone = command_entry.command.clone();
@@ -203,7 +247,6 @@ impl QuickMenuApp {
                 window_clone.close();
             });
 
-            // 4x2 layout: 4 columns, 2 rows
             let row = (index / 4) as i32;
             let col = (index % 4) as i32;
             grid.attach(&button, col, row, 1, 1);
@@ -211,7 +254,6 @@ impl QuickMenuApp {
 
         window.set_child(Some(&grid));
 
-        // Setup Escape key
         let key_controller = EventControllerKey::new();
         let window_clone = window.clone();
         key_controller.connect_key_pressed(move |_, key, _, _| {
